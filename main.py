@@ -1,34 +1,42 @@
-from core.intent_matcher import match_intent
-from intents.small_talk import handle_small_talk
-from intents.discoverability import handle_discoverability
-from intents.identity import handle_identity
-from intents.question_answering import handle_question_answering
+from core.intent_matcher import match_intent_and_subintent
 from core.qa_loader import load_qa_dataset
+from core.intent_registry import INTENT_REGISTRY
+from core.chat_context import ChatContext
 
+# Program entry point
 def main():
     print("Hello! I'm your chatbot. Type 'exit' to quit.")
     questions, answers = load_qa_dataset("data/COMP3074-CW1-Dataset.csv")
-    user_name = None
+    context = ChatContext(questions,answers)
+    start_chatbot_loop(context)
 
+# =========================
+# Helper functions
+# ========================
+
+def start_chatbot_loop(context):
     while True:
         user_input = input("> ")
-        if user_input.lower() in ["exit", "quit"]:
-            print("Goodbye!")
+        if does_user_want_to_exit(user_input):
+            handle_user_exit()
             break
+        match_and_handle_intent(user_input, context)
 
-        intent = match_intent(user_input)
+def match_and_handle_intent(user_input, context):
+    intent, sub_intent, score = match_intent_and_subintent(user_input)
+    intent_handler = INTENT_REGISTRY.get(intent)
+    if not intent_handler or score < 0.2:
+        print("Sorry, I didn’t quite get that.")
+        return
+    intent_handler.handle(user_input, context, sub_intent)
 
-        if intent == "small_talk":
-            print(handle_small_talk(user_input))
-        elif intent == "discoverability":
-            print(handle_discoverability())
-        elif intent == "identity":
-            user_name = handle_identity(user_input, user_name)
-        elif intent == "question_answering":
-            print(f"Loaded {len(questions)} questions and {len(answers)} answers.")
-            print(handle_question_answering(user_input, questions, answers))
-        else:
-            print("Sorry, I didn’t quite get that.")
+def does_user_want_to_exit(user_input):
+    if user_input.lower() in ["exit", "quit"]:
+        return True
+    return False
+
+def handle_user_exit():
+    print("Goodbye! Have a great day!")
 
 if __name__ == "__main__":
     main()
