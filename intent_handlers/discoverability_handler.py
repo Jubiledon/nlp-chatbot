@@ -2,9 +2,7 @@ import random
 from core.intent_handler import IntentHandler
 
 DISCOVERABILITY_ANSWERS = [
-    "I can chat with you, help with questions, and remember some things.",
-    "I’m here to talk with you, help you learn, and answer simple queries.",
-    "I can answer questions, have conversations, and help however I can."
+    "I can chat with you, help you book a trip, answer questions, and remember some things! What would you like to know?",
 ]
 
 class DiscoverabilityHandler(IntentHandler):
